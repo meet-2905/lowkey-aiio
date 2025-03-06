@@ -22,23 +22,43 @@ export default function Index() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetchTasks();
-  }, []);
+    if (user) {
+      fetchTasks();
+    }
+  }, [user]);
 
   const fetchTasks = async () => {
     try {
+      if (!user) {
+        toast({
+          title: "Authentication Error",
+          description: "You must be logged in to fetch tasks",
+          variant: "destructive",
+        });
+        return;
+      }
+
       const { data, error } = await supabase
         .from('tasks')
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching tasks:", error);
+        toast({
+          title: "Error fetching tasks",
+          description: `${error.message} (${error.code})`,
+          variant: "destructive",
+        });
+        throw error;
+      }
 
       setTasks(data as Task[]);
     } catch (error: any) {
+      console.error("Error in Index.tsx:", error);
       toast({
         title: "Error fetching tasks",
-        description: error.message,
+        description: error.message || "Failed to fetch tasks",
         variant: "destructive",
       });
     }
@@ -46,19 +66,36 @@ export default function Index() {
 
   const handleCreateTask = async (newTask: Partial<Task>) => {
     try {
+      if (!user) {
+        toast({
+          title: "Authentication Error",
+          description: "You must be logged in to create tasks",
+          variant: "destructive",
+        });
+        return;
+      }
+
       const { data, error } = await supabase
         .from('tasks')
         .insert([
           { 
             ...newTask,
-            created_by: user?.id,
+            created_by: user.id,
             status: newTask.status || 'pending',
             priority: newTask.priority || 'medium',
           }
         ])
         .select();
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error creating task:", error);
+        toast({
+          title: "Error creating task",
+          description: `${error.message} (${error.code})`,
+          variant: "destructive",
+        });
+        throw error;
+      }
 
       if (data) {
         setTasks((prev) => [data[0] as Task, ...prev]);
@@ -68,9 +105,10 @@ export default function Index() {
         });
       }
     } catch (error: any) {
+      console.error("Error in Index.tsx:", error);
       toast({
         title: "Error creating task",
-        description: error.message,
+        description: error.message || "Failed to create task",
         variant: "destructive",
       });
     }
@@ -80,13 +118,30 @@ export default function Index() {
     if (!selectedTask) return;
 
     try {
+      if (!user) {
+        toast({
+          title: "Authentication Error",
+          description: "You must be logged in to edit tasks",
+          variant: "destructive",
+        });
+        return;
+      }
+
       const { data, error } = await supabase
         .from('tasks')
         .update(updatedTask)
         .eq('id', selectedTask.id)
         .select();
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error updating task:", error);
+        toast({
+          title: "Error updating task",
+          description: `${error.message} (${error.code})`,
+          variant: "destructive",
+        });
+        throw error;
+      }
 
       if (data) {
         setTasks((prev) =>
@@ -102,9 +157,10 @@ export default function Index() {
         });
       }
     } catch (error: any) {
+      console.error("Error in Index.tsx:", error);
       toast({
         title: "Error updating task",
-        description: error.message,
+        description: error.message || "Failed to update task",
         variant: "destructive",
       });
     }
@@ -112,12 +168,29 @@ export default function Index() {
 
   const handleDeleteTask = async (taskId: string) => {
     try {
+      if (!user) {
+        toast({
+          title: "Authentication Error",
+          description: "You must be logged in to delete tasks",
+          variant: "destructive",
+        });
+        return;
+      }
+
       const { error } = await supabase
         .from('tasks')
         .delete()
         .eq('id', taskId);
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error deleting task:", error);
+        toast({
+          title: "Error deleting task",
+          description: `${error.message} (${error.code})`,
+          variant: "destructive",
+        });
+        throw error;
+      }
 
       setTasks((prev) => prev.filter((task) => task.id !== taskId));
       toast({
@@ -126,9 +199,10 @@ export default function Index() {
         variant: "destructive",
       });
     } catch (error: any) {
+      console.error("Error in Index.tsx:", error);
       toast({
         title: "Error deleting task",
-        description: error.message,
+        description: error.message || "Failed to delete task",
         variant: "destructive",
       });
     }
@@ -136,60 +210,62 @@ export default function Index() {
 
   const handleAddComment = async (taskId: string, comment: Partial<Comment>) => {
     try {
+      if (!user) {
+        toast({
+          title: "Authentication Error",
+          description: "You must be logged in to add comments",
+          variant: "destructive",
+        });
+        return;
+      }
+
       const { data, error } = await supabase
         .from('comments')
         .insert([
           {
             task_id: taskId,
-            user_id: user?.id,
+            user_id: user.id,
             content: comment.content,
           }
         ])
         .select();
 
-      if (error) throw error;
-
-      // Refresh the selected task to get the updated comments
-      if (selectedTask && selectedTask.id === taskId) {
-        const { data: updatedTask, error: taskError } = await supabase
-          .from('tasks')
-          .select(`
-            *,
-            comments(*)
-          `)
-          .eq('id', taskId)
-          .single();
-
-        if (taskError) throw taskError;
-        
-        setSelectedTask(updatedTask as unknown as Task);
-
-        // Also update the task in the tasks list
-        setTasks((prev) =>
-          prev.map((task) =>
-            task.id === taskId
-              ? { ...task, comments: [...(task.comments || []), data[0] as Comment] }
-              : task
-          )
-        );
+      if (error) {
+        console.error("Error adding comment:", error);
+        toast({
+          title: "Error adding comment",
+          description: `${error.message} (${error.code})`,
+          variant: "destructive",
+        });
+        throw error;
       }
-      
+
       toast({
         title: "Comment added",
         description: "Your comment has been added successfully.",
       });
     } catch (error: any) {
+      console.error("Error in Index.tsx:", error);
       toast({
         title: "Error adding comment",
-        description: error.message,
+        description: error.message || "Failed to add comment",
         variant: "destructive",
       });
     }
   };
 
   const handleLogout = async () => {
-    await signOut();
-    navigate('/auth');
+    try {
+      await signOut();
+      navigate('/auth');
+    } catch (error: any) {
+      console.error("Error logging out:", error);
+      toast({
+        title: "Error logging out",
+        description: error.message || "Failed to log out",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -208,23 +284,34 @@ export default function Index() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {tasks.map((task) => (
-          <TaskCard
-            key={task.id}
-            task={task}
-            onEdit={(task) => {
-              setSelectedTask(task);
-              setIsEditDialogOpen(true);
-            }}
-            onDelete={handleDeleteTask}
-            onClick={(task) => {
-              setSelectedTask(task);
-              setIsDetailsDialogOpen(true);
-            }}
-          />
-        ))}
-      </div>
+      {tasks.length === 0 ? (
+        <div className="flex flex-col items-center justify-center p-12 text-center">
+          <h2 className="text-xl font-semibold mb-2">No tasks found</h2>
+          <p className="text-muted-foreground mb-4">Create your first task to get started</p>
+          <Button onClick={() => setIsCreateDialogOpen(true)}>
+            <Plus className="mr-2 h-4 w-4" />
+            Create First Task
+          </Button>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {tasks.map((task) => (
+            <TaskCard
+              key={task.id}
+              task={task}
+              onEdit={(task) => {
+                setSelectedTask(task);
+                setIsEditDialogOpen(true);
+              }}
+              onDelete={handleDeleteTask}
+              onClick={(task) => {
+                setSelectedTask(task);
+                setIsDetailsDialogOpen(true);
+              }}
+            />
+          ))}
+        </div>
+      )}
 
       <TaskDialog
         open={isCreateDialogOpen}

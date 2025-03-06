@@ -1,4 +1,5 @@
-import { useState } from "react";
+
+import { useState, useEffect } from "react";
 import { format, addDays } from "date-fns";
 import { CalendarIcon } from "lucide-react";
 import { Task, Priority, Status } from "@/types/task";
@@ -42,8 +43,26 @@ export function TaskDialog({ task, open, onOpenChange, onSubmit }: TaskDialogPro
   const [description, setDescription] = useState(task?.description || "");
   const [status, setStatus] = useState<Status>(task?.status || "pending");
   const [priority, setPriority] = useState<Priority>(task?.priority || "medium");
-  const [dueDate, setDueDate] = useState<Date>(task?.dueDate || defaultDueDate);
-  const [assignedUser, setAssignedUser] = useState(task?.assignedUser || "");
+  const [dueDate, setDueDate] = useState<Date>(task?.due_date ? new Date(task.due_date) : defaultDueDate);
+  const [assignedUser, setAssignedUser] = useState(task?.assigned_user || "");
+
+  useEffect(() => {
+    if (task) {
+      setTitle(task.title || "");
+      setDescription(task.description || "");
+      setStatus(task.status || "pending");
+      setPriority(task.priority || "medium");
+      setDueDate(task.due_date ? new Date(task.due_date) : defaultDueDate);
+      setAssignedUser(task.assigned_user || "");
+    } else {
+      setTitle("");
+      setDescription("");
+      setStatus("pending");
+      setPriority("medium");
+      setDueDate(defaultDueDate);
+      setAssignedUser("");
+    }
+  }, [task, open]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,8 +71,8 @@ export function TaskDialog({ task, open, onOpenChange, onSubmit }: TaskDialogPro
       description,
       status,
       priority,
-      dueDate,
-      assignedUser,
+      due_date: dueDate.toISOString(),
+      assigned_user: assignedUser,
     });
     onOpenChange(false);
   };
@@ -94,7 +113,7 @@ export function TaskDialog({ task, open, onOpenChange, onSubmit }: TaskDialogPro
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="pending">Pending</SelectItem>
-                    <SelectItem value="in-progress">In Progress</SelectItem>
+                    <SelectItem value="in_progress">In Progress</SelectItem>
                     <SelectItem value="completed">Completed</SelectItem>
                   </SelectContent>
                 </Select>

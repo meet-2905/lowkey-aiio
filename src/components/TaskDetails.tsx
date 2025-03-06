@@ -16,6 +16,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/components/ui/use-toast";
 
 interface TaskDetailsProps {
   task: Task;
@@ -34,6 +35,7 @@ export function TaskDetails({
   const [comments, setComments] = useState<Comment[]>([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
+  const { toast } = useToast();
 
   useEffect(() => {
     if (open && task) {
@@ -52,17 +54,39 @@ export function TaskDetails({
         .eq('task_id', task.id)
         .order('created_at', { ascending: true });
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching comments:", error);
+        toast({
+          title: "Error fetching comments",
+          description: `${error.message} (${error.code})`,
+          variant: "destructive",
+        });
+        throw error;
+      }
 
       setComments(data as Comment[]);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error fetching comments:", error);
+      toast({
+        title: "Error in TaskDetails.tsx",
+        description: error.message || "Failed to fetch comments",
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }
   };
 
   const handleAddComment = () => {
+    if (!user) {
+      toast({
+        title: "Authentication Error",
+        description: "You must be logged in to add comments",
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (newComment.trim()) {
       onAddComment(task.id, {
         content: newComment,
@@ -80,7 +104,7 @@ export function TaskDetails({
 
   const statusColors = {
     pending: "bg-gray-100 text-gray-800",
-    "in_progress": "bg-purple-100 text-purple-800",
+    in_progress: "bg-purple-100 text-purple-800",
     completed: "bg-green-100 text-green-800",
   };
 

@@ -1,3 +1,4 @@
+
 import { format } from "date-fns";
 import { Calendar, Edit, MessageSquare, Trash, User } from "lucide-react";
 import { Task } from "@/types/task";
@@ -27,7 +28,7 @@ export function TaskCard({ task, onEdit, onDelete, onClick }: TaskCardProps) {
 
   const statusColors = {
     pending: "bg-gray-100 text-gray-800",
-    "in-progress": "bg-purple-100 text-purple-800",
+    "in_progress": "bg-purple-100 text-purple-800",
     completed: "bg-green-100 text-green-800",
   };
 
@@ -67,8 +68,8 @@ export function TaskCard({ task, onEdit, onDelete, onClick }: TaskCardProps) {
           <Badge variant="secondary" className={priorityColors[task.priority]}>
             {task.priority}
           </Badge>
-          <Badge variant="secondary" className={statusColors[task.status]}>
-            {task.status}
+          <Badge variant="secondary" className={statusColors[task.status.replace('-', '_') as keyof typeof statusColors]}>
+            {task.status.replace('_', ' ')}
           </Badge>
         </div>
       </CardHeader>
@@ -81,16 +82,12 @@ export function TaskCard({ task, onEdit, onDelete, onClick }: TaskCardProps) {
       <CardFooter className="flex justify-between">
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <Calendar className="h-4 w-4" />
-          <span>{format(new Date(task.dueDate), "MMM d, yyyy")}</span>
+          <span>{format(new Date(task.due_date), "MMM d, yyyy")}</span>
         </div>
         <div className="flex gap-4">
           <div className="flex items-center gap-1 text-sm text-muted-foreground">
-            <MessageSquare className="h-4 w-4" />
-            <span>{task.comments.length}</span>
-          </div>
-          <div className="flex items-center gap-1 text-sm text-muted-foreground">
             <User className="h-4 w-4" />
-            <span>{task.assignedUser}</span>
+            <span>{task.assigned_user}</span>
           </div>
         </div>
       </CardFooter>

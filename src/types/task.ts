@@ -15,9 +15,9 @@ export interface Task {
   description: string;
   status: Status;
   priority: Priority;
-  due_date: Date;
+  due_date: string;
   assigned_user: string;
-  created_at: Date;
+  created_at: string;
   created_by?: string;
 }
 
@@ -27,5 +27,5 @@ export interface Comment {
   user_id: string;
   parent_id?: string;
   content: string;
-  created_at: Date;
+  created_at: string;
 }

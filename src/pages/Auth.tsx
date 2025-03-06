@@ -16,6 +16,8 @@ import {
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
+import { useEffect } from "react";
 
 export default function Auth() {
   const [email, setEmail] = useState("");
@@ -26,6 +28,14 @@ export default function Auth() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user } = useAuth();
+
+  // Redirect if user is already logged in
+  useEffect(() => {
+    if (user) {
+      navigate("/");
+    }
+  }, [user, navigate]);
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,7 +53,10 @@ export default function Auth() {
         },
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error("Sign up error:", error);
+        throw error;
+      }
 
       toast({
         title: "Account created",
@@ -54,8 +67,9 @@ export default function Auth() {
         navigate("/");
       }
     } catch (error: any) {
+      console.error("Error in Auth.tsx:", error);
       toast({
-        title: "Error",
+        title: "Error creating account",
         description: error.message || "Failed to create account",
         variant: "destructive",
       });
@@ -74,7 +88,10 @@ export default function Auth() {
         password,
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error("Sign in error:", error);
+        throw error;
+      }
       
       toast({
         title: "Welcome back",
@@ -83,8 +100,9 @@ export default function Auth() {
       
       navigate("/");
     } catch (error: any) {
+      console.error("Error in Auth.tsx:", error);
       toast({
-        title: "Error",
+        title: "Error signing in",
         description: error.message || "Failed to sign in",
         variant: "destructive",
       });
