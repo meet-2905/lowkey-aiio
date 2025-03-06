@@ -1,6 +1,5 @@
-
 import { useState } from "react";
-import { format } from "date-fns";
+import { format, addDays } from "date-fns";
 import { CalendarIcon } from "lucide-react";
 import { Task, Priority, Status } from "@/types/task";
 import { Button } from "@/components/ui/button";
@@ -37,11 +36,13 @@ interface TaskDialogProps {
 }
 
 export function TaskDialog({ task, open, onOpenChange, onSubmit }: TaskDialogProps) {
+  const defaultDueDate = addDays(new Date(), 7);
+  
   const [title, setTitle] = useState(task?.title || "");
   const [description, setDescription] = useState(task?.description || "");
-  const [status, setStatus] = useState<Status>(task?.status || "todo");
+  const [status, setStatus] = useState<Status>(task?.status || "pending");
   const [priority, setPriority] = useState<Priority>(task?.priority || "medium");
-  const [dueDate, setDueDate] = useState<Date>(task?.dueDate || new Date());
+  const [dueDate, setDueDate] = useState<Date>(task?.dueDate || defaultDueDate);
   const [assignedUser, setAssignedUser] = useState(task?.assignedUser || "");
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -92,9 +93,9 @@ export function TaskDialog({ task, open, onOpenChange, onSubmit }: TaskDialogPro
                     <SelectValue placeholder="Select status" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="todo">To Do</SelectItem>
+                    <SelectItem value="pending">Pending</SelectItem>
                     <SelectItem value="in-progress">In Progress</SelectItem>
-                    <SelectItem value="done">Done</SelectItem>
+                    <SelectItem value="completed">Completed</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

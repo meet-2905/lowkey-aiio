@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { Plus } from "lucide-react";
-import { Task } from "@/types/task";
+import { Task, Comment } from "@/types/task";
 import { Button } from "@/components/ui/button";
 import { TaskCard } from "@/components/TaskCard";
 import { TaskDialog } from "@/components/TaskDialog";
@@ -55,19 +55,23 @@ export default function Index() {
   };
 
   const handleAddComment = (taskId: string, comment: Partial<Comment>) => {
+    const newComment: Comment = {
+      id: Math.random().toString(36).substr(2, 9),
+      createdAt: new Date(),
+      ...comment,
+    } as Comment;
+
     setTasks((prev) =>
       prev.map((task) =>
         task.id === taskId
           ? {
               ...task,
-              comments: [
-                ...task.comments,
-                { id: Math.random().toString(36).substr(2, 9), ...comment } as Comment,
-              ],
+              comments: [...task.comments, newComment],
             }
           : task
       )
     );
+    
     toast({
       title: "Comment added",
       description: "Your comment has been added successfully.",

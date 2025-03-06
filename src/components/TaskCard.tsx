@@ -1,4 +1,3 @@
-
 import { format } from "date-fns";
 import { Calendar, Edit, MessageSquare, Trash, User } from "lucide-react";
 import { Task } from "@/types/task";
@@ -27,9 +26,9 @@ export function TaskCard({ task, onEdit, onDelete, onClick }: TaskCardProps) {
   };
 
   const statusColors = {
-    todo: "bg-gray-100 text-gray-800",
+    pending: "bg-gray-100 text-gray-800",
     "in-progress": "bg-purple-100 text-purple-800",
-    done: "bg-green-100 text-green-800",
+    completed: "bg-green-100 text-green-800",
   };
 
   return (
