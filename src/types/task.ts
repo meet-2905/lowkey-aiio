@@ -1,6 +1,13 @@
 
 export type Priority = 'low' | 'medium' | 'high';
-export type Status = 'pending' | 'in-progress' | 'completed';
+export type Status = 'pending' | 'in_progress' | 'completed';
+
+export interface User {
+  id: string;
+  email: string;
+  first_name?: string;
+  last_name?: string;
+}
 
 export interface Task {
   id: string;
@@ -8,15 +15,17 @@ export interface Task {
   description: string;
   status: Status;
   priority: Priority;
-  dueDate: Date;
-  assignedUser: string;
-  createdAt: Date;
-  comments: Comment[];
+  due_date: Date;
+  assigned_user: string;
+  created_at: Date;
+  created_by?: string;
 }
 
 export interface Comment {
   id: string;
-  text: string;
-  author: string;
-  createdAt: Date;
+  task_id: string;
+  user_id: string;
+  parent_id?: string;
+  content: string;
+  created_at: Date;
 }
