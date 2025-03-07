@@ -1,11 +1,10 @@
-
 import { useEffect, useState } from "react";
 import { Plus, LogOut } from "lucide-react";
 import { Task, Comment } from "@/types/task";
 import { Button } from "@/components/ui/button";
-import { TaskCard } from "@/components/TaskCard";
 import { TaskDialog } from "@/components/TaskDialog";
 import { TaskDetails } from "@/components/TaskDetails";
+import { TaskTabs } from "@/components/TaskTabs";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -75,7 +74,6 @@ export default function Index() {
         return;
       }
 
-      // Ensure title is included to satisfy TypeScript requirement
       if (!newTask.title) {
         toast({
           title: "Error creating task",
@@ -307,23 +305,18 @@ export default function Index() {
           </Button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {tasks.map((task) => (
-            <TaskCard
-              key={task.id}
-              task={task}
-              onEdit={(task) => {
-                setSelectedTask(task);
-                setIsEditDialogOpen(true);
-              }}
-              onDelete={handleDeleteTask}
-              onClick={(task) => {
-                setSelectedTask(task);
-                setIsDetailsDialogOpen(true);
-              }}
-            />
-          ))}
-        </div>
+        <TaskTabs
+          tasks={tasks}
+          onEdit={(task) => {
+            setSelectedTask(task);
+            setIsEditDialogOpen(true);
+          }}
+          onDelete={handleDeleteTask}
+          onClick={(task) => {
+            setSelectedTask(task);
+            setIsDetailsDialogOpen(true);
+          }}
+        />
       )}
 
       <TaskDialog
