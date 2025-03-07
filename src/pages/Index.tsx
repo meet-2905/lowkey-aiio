@@ -288,10 +288,15 @@ export default function Index() {
             <Plus className="mr-2 h-4 w-4" />
             New Task
           </Button>
-          <Button variant="outline" onClick={handleLogout}>
-            <LogOut className="mr-2 h-4 w-4" />
-            Logout
-          </Button>
+          <div className="flex flex-col items-end">
+            {user && (
+              <span className="text-sm text-muted-foreground mb-2">{user.email}</span>
+            )}
+            <Button variant="outline" onClick={handleLogout}>
+              <LogOut className="mr-2 h-4 w-4" />
+              Logout
+            </Button>
+          </div>
         </div>
       </div>
 
