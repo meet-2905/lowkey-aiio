@@ -42,6 +42,7 @@ export default function Auth() {
     setLoading(true);
 
     try {
+      // Include first_name and last_name in user metadata
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -56,6 +57,27 @@ export default function Auth() {
       if (error) {
         console.error("Sign up error:", error);
         throw error;
+      }
+
+      // Create or update profile (as a backup in case the trigger doesn't work)
+      if (data.user) {
+        try {
+          const { error: profileError } = await supabase
+            .from('profiles')
+            .upsert({
+              id: data.user.id,
+              email: email,
+              first_name: firstName,
+              last_name: lastName
+            });
+
+          if (profileError) {
+            console.error("Profile creation error:", profileError);
+            // Don't throw here as the main signup succeeded
+          }
+        } catch (profileErr) {
+          console.error("Profile creation exception:", profileErr);
+        }
       }
 
       toast({

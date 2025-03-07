@@ -75,16 +75,29 @@ export default function Index() {
         return;
       }
 
+      // Ensure title is included to satisfy TypeScript requirement
+      if (!newTask.title) {
+        toast({
+          title: "Error creating task",
+          description: "Task title is required",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const taskToInsert = {
+        title: newTask.title,
+        description: newTask.description || "",
+        status: newTask.status || 'pending',
+        priority: newTask.priority || 'medium',
+        due_date: newTask.due_date,
+        assigned_user: newTask.assigned_user || null,
+        created_by: user.id
+      };
+
       const { data, error } = await supabase
         .from('tasks')
-        .insert([
-          { 
-            ...newTask,
-            created_by: user.id,
-            status: newTask.status || 'pending',
-            priority: newTask.priority || 'medium',
-          }
-        ])
+        .insert([taskToInsert])
         .select();
 
       if (error) {

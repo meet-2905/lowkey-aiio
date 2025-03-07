@@ -28,6 +28,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
+import { useProfiles } from "@/hooks/useProfiles";
 
 interface TaskDialogProps {
   task?: Task;
@@ -45,6 +46,8 @@ export function TaskDialog({ task, open, onOpenChange, onSubmit }: TaskDialogPro
   const [priority, setPriority] = useState<Priority>(task?.priority || "medium");
   const [dueDate, setDueDate] = useState<Date>(task?.due_date ? new Date(task.due_date) : defaultDueDate);
   const [assignedUser, setAssignedUser] = useState(task?.assigned_user || "");
+  
+  const { profiles, loading: profilesLoading } = useProfiles();
 
   useEffect(() => {
     if (task) {
@@ -161,12 +164,22 @@ export function TaskDialog({ task, open, onOpenChange, onSubmit }: TaskDialogPro
               </div>
               <div className="space-y-2">
                 <Label htmlFor="assignedUser">Assigned To</Label>
-                <Input
-                  id="assignedUser"
-                  value={assignedUser}
-                  onChange={(e) => setAssignedUser(e.target.value)}
-                  placeholder="Enter user name"
-                />
+                <Select 
+                  value={assignedUser} 
+                  onValueChange={(value) => setAssignedUser(value)}
+                  disabled={profilesLoading}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select user" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {profiles.map((profile) => (
+                      <SelectItem key={profile.id} value={profile.id}>
+                        {profile.email} {profile.first_name && profile.last_name ? `(${profile.first_name} ${profile.last_name})` : ''}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
           </div>

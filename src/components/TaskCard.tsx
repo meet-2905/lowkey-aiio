@@ -1,6 +1,6 @@
 
 import { format } from "date-fns";
-import { Calendar, Edit, MessageSquare, Trash, User } from "lucide-react";
+import { Calendar, Edit, Trash, User } from "lucide-react";
 import { Task } from "@/types/task";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,6 +11,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 interface TaskCardProps {
   task: Task;
@@ -20,6 +22,39 @@ interface TaskCardProps {
 }
 
 export function TaskCard({ task, onEdit, onDelete, onClick }: TaskCardProps) {
+  const [assignedUserName, setAssignedUserName] = useState<string>("");
+
+  useEffect(() => {
+    const fetchAssignedUser = async () => {
+      if (!task.assigned_user) return;
+      
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('email, first_name, last_name')
+          .eq('id', task.assigned_user)
+          .single();
+        
+        if (error) {
+          console.error("Error fetching assigned user:", error);
+          return;
+        }
+        
+        if (data) {
+          if (data.first_name && data.last_name) {
+            setAssignedUserName(`${data.first_name} ${data.last_name}`);
+          } else {
+            setAssignedUserName(data.email || "");
+          }
+        }
+      } catch (err) {
+        console.error("Exception fetching assigned user:", err);
+      }
+    };
+    
+    fetchAssignedUser();
+  }, [task.assigned_user]);
+
   const priorityColors = {
     low: "bg-blue-100 text-blue-800",
     medium: "bg-yellow-100 text-yellow-800",
@@ -87,7 +122,7 @@ export function TaskCard({ task, onEdit, onDelete, onClick }: TaskCardProps) {
         <div className="flex gap-4">
           <div className="flex items-center gap-1 text-sm text-muted-foreground">
             <User className="h-4 w-4" />
-            <span>{task.assigned_user}</span>
+            <span>{assignedUserName || "Unassigned"}</span>
           </div>
         </div>
       </CardFooter>
