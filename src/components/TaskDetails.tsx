@@ -17,6 +17,7 @@ import { Separator } from "@/components/ui/separator";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/components/ui/use-toast";
+import { useProfiles } from "@/hooks/useProfiles";
 
 interface TaskDetailsProps {
   task: Task;
@@ -36,6 +37,7 @@ export function TaskDetails({
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
   const { toast } = useToast();
+  const { profiles } = useProfiles();
 
   useEffect(() => {
     if (open && task) {
@@ -108,6 +110,14 @@ export function TaskDetails({
     completed: "bg-green-100 text-green-800",
   };
 
+  // Find the assigned user email
+  const getAssignedUserEmail = () => {
+    if (!task.assigned_user) return "Unassigned";
+    
+    const assignedProfile = profiles.find(profile => profile.id === task.assigned_user);
+    return assignedProfile ? assignedProfile.email : task.assigned_user;
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[600px] slide-up">
@@ -134,7 +144,7 @@ export function TaskDetails({
             </div>
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <User className="h-4 w-4" />
-              <span>Assigned to: {task.assigned_user}</span>
+              <span>Assigned to: {getAssignedUserEmail()}</span>
             </div>
           </div>
           <Separator />
